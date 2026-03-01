@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+    <meta charset="UTF-8">
+    <title>HTML5 Snake Game</title>
+    <style>
+        /* CSS: Тоглоомын гадна харагдах байдал */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #2c3e50;
+            color: white;
+            font-family: Arial, sans-serif;
+            flex-direction: column;
+        }
+        canvas {
+            border: 5px solid #ecf0f1;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            background-color: #000;
+        }
+        h1 { margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+    <h1>Могой тоглоом</h1>
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+    <p>Гарны сумаар удирдаарай!</p>
+
+    <script>
+        // JavaScript: Тоглоомын логик
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        const gridSize = 20; // Нэг нүдний хэмжээ
+        const tileCount = canvas.width / gridSize; // Нийт нүдний тоо
+
+        let score = 0;
+        let dx = 0; // Хэвтээ чиглэл
+        let dy = 0; // Босоо чиглэл
+
+        // Могойн бие (анхны байрлал)
+        let snake = [
+            {x: 10, y: 10},
+            {x: 10, y: 11},
+            {x: 10, y: 12}
+        ];
+
+        // Хоолны байрлал
+        let foodX = 5;
+        let foodY = 5;
+
+        // Тоглоомыг эхлүүлэх (секундэд 10 удаа зурах)
+        setInterval(main, 100);
+
+        // Удирдлага (Гарны даралт мэдрэх)
+        document.addEventListener("keydown", changeDirection);
+
+        function main() {
+            if (didGameEnd()) {
+                alert("Тоглоом дууслаа! Таны оноо: " + score);
+                resetGame();
+                return;
+            }
+
+            clearCanvas();
+            drawFood();
+            advanceSnake();
+            drawSnake();
+        }
+
+        function clearCanvas() {
+            ctx.fillStyle = "black";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function drawSnake() {
+            ctx.fillStyle = "#2ecc71"; // Могойн өнгө
+            snake.forEach(part => {
+                ctx.fillRect(part.x * gridSize, part.y * gridSize, gridSize - 2, gridSize - 2);
+            });
+        }
+
+        function advanceSnake() {
+            const head = { x: snake[0].x + dx, y: snake[0].y + dy };
+            snake.unshift(head); // Шинэ толгойг нэмэх
+
+            // Хоол идсэн эсэхийг шалгах
+            if (snake[0].x === foodX && snake[0].y === foodY) {
+                score += 10;
+                createFood();
+            } else {
+                snake.pop(); // Сүүлний хэсгийг хасах
+            }
+        }
+
+        function didGameEnd() {
+            // Хана мөргөх
+            if (snake[0].x < 0 || snake[0].x >= tileCount || snake[0].y < 0 || snake[0].y >= tileCount) return true;
+            // Өөрийгөө мөргөх
+            for (let i = 4; i < snake.length; i++) {
+                if (snake[i].x === snake[0].x && snake[i].y === snake[0].y) return true;
+            }
+            return false;
+        }
+
+        function createFood() {
+            foodX = Math.floor(Math.random() * tileCount);
+            foodY = Math.floor(Math.random() * tileCount);
+        }
+
+        function drawFood() {
+            ctx.fillStyle = "#e74c3c"; // Хоолны өнгө
+            ctx.fillRect(foodX * gridSize, foodY * gridSize, gridSize - 2, gridSize - 2);
+        }
+
+        function changeDirection(event) {
+            const LEFT_KEY = 37;
+            const RIGHT_KEY = 39;
+            const UP_KEY = 38;
+            const DOWN_KEY = 40;
+
+            const keyPressed = event.keyCode;
+            const goingUp = dy === -1;
+            const goingDown = dy === 1;
+            const goingRight = dx === 1;
+            const goingLeft = dx === -1;
+
+            if (keyPressed === LEFT_KEY && !goingRight) { dx = -1; dy = 0; }
+            if (keyPressed === UP_KEY && !goingDown) { dx = 0; dy = -1; }
+            if (keyPressed === RIGHT_KEY && !goingLeft) { dx = 1; dy = 0; }
+            if (keyPressed === DOWN_KEY && !goingUp) { dx = 0; dy = 1; }
+        }
+
+        function resetGame() {
+            snake = [{x: 10, y: 10}, {x: 10, y: 11}, {x: 10, y: 12}];
+            dx = 0; dy = 0; score = 0;
+            createFood();
+        }
+    </script>
+</body>
+</html>
